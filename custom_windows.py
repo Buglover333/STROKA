@@ -478,8 +478,8 @@ def prep_optionsscrl(stdscr, winy, ygap, xgap, header_text, options, add_shaddow
     for elem in options:
         if len(elem) > longest:
             longest = len(elem)
-    if len(header_text) > longest:
-        longest = len(header_text)
+    if len(header_text.split('\n')[0]) + 1 > longest:
+        longest = len(header_text.split('\n')[0]) + 1
     for _ in range((winy - 1) * (longest + 2)):
         filler += '█'
     for _ in range(3 * longest):
@@ -501,8 +501,8 @@ def prep_optionsscrl(stdscr, winy, ygap, xgap, header_text, options, add_shaddow
         header_shad.win.bkgdset(' ', curses.color_pair(shaddow_color))
         init_shaddow(True)
     #header
-    header = Window(3, longest + 2, ygap - 3, xgap)
-    header_wid = (longest // 2) - (len(header_text) // 2) + 1
+    header = Window(header_text.count('\n') + 3, longest + 2, ygap - header_text.count('\n') - 3, xgap)
+    header_wid = (longest // 2) - (len(header_text.split('\n')[0]) //  2 + len(header_text.split('\n')[0]) % 2) + 1
     header.win.bkgdset(' ', curses.color_pair(header_color))
     init_header(header_text, header_color)
     Win = Window(winy + 1, longest + 2, ygap, xgap)

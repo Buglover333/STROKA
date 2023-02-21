@@ -51,13 +51,13 @@ filename = 0
 longest  = 0
 def edit():
     global name, redacted, DIRECTORY, filename, longest
-    #filename
+    #choosing/creating a file
     ls_list = os.listdir(DIRECTORY)
     for elem in ls_list:
         if len(elem) > longest:
             longest = len(elem)
     ls_list.insert(0, 'NEW')
-    filename = cw.optionsscrl(winy // 2, winy // 4, winx // 2 - longest, '   choose a file:   ', ls_list, True) 
+    filename = cw.optionsscrl(winy // 2, winy // 4, winx // 2 - longest, '~|choose a file:|~', ls_list, True) 
     name = filename
     newname = None
     if filename == 'NEW':
