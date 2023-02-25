@@ -1,6 +1,7 @@
 import custom_windows as cw
 import curses
 import os
+from argparse import ArgumentParser, Namespace
 
 #getting screen dimentions
 def get_dimentions(stdscr):
@@ -15,11 +16,11 @@ from curses.textpad import Textbox, rectangle
 #input filename
 def fninput(stdscr, message = '(hit Ctrl-G to send)'):
     curses.curs_set(1)
-    stdscr.addstr(winy // 2 - 4, winx // 2 - 14 , message)
-    bgwin = curses.newwin(5,32, winy // 2 - 4, winx // 2 - 20)
+    stdscr.addstr(winy // 2 - 4, winx // 2 - 11 , message)
+    bgwin = curses.newwin(5,32, winy // 2 - 4, winx // 2 - 17)
     bgwin.border()
     bgwin.refresh()
-    editwin = curses.newwin(3,29, winy // 2 - 3, winx // 2 - 18)
+    editwin = curses.newwin(3,29, winy // 2 - 3, winx // 2 - 15)
     stdscr.refresh()
     box = Textbox(editwin)
     box.edit()
@@ -58,6 +59,19 @@ def configure():
 
 configure()
 
+#########################
+#    argument parser    #
+#########################
+choosing = True
+path = None
+parser = ArgumentParser()
+parser.add_argument('path', nargs = '?', default = 'not specified')
+args: Namespace = parser.parse_args()
+
+if args.path != 'not specified':
+    path = args.path
+    choosing = False
+
 settings = []
 def change_setting(prefix1, prefix2, variable, pos1, pos2, limit):
     if variable < limit:
@@ -75,29 +89,30 @@ def change_setting(prefix1, prefix2, variable, pos1, pos2, limit):
     return variable
 
 cur_path = DIRECTORY
-def change_directory(path):
-    global cur_path
-    while path == None:
-        path = curses.wrapper(fninput)
-        try:
-            f = open(path + 'tmp.txt', 'x')
-            f.close()
-            os.remove(path + 'tmp.txt')
-            with open('conf.txt', '+r') as file:
-                file_str = file.read()
-            os.remove('conf.txt')
-            with open('conf.txt', '+x') as file:
-                file_list = file_str.split('\n')
-                file_list[0] = 'DIRECTORY=' + path[:len(path) - 2:]
-                file_str = '\n'.join(file_list)
-                file.write(file_str)
-            return path
-        except:
-            ch = cw.alert(4, 43, winy // 2 - 3, winx // 2 - 21, 'the path is incorrect, press Enter to retry', True)
-            if ch:
-                path = None
-            else:
-                return cur_path 
+def change_directory(newpath):
+    global cur_path, path
+    while newpath == None:
+        newpath = curses.wrapper(fninput)
+        if len(newpath) > 1:
+            try:    
+                f = open(newpath + 'tmp.txt', 'x')
+                f.close()
+                os.remove(newpath + 'tmp.txt')
+                with open('conf.txt', '+r') as file:
+                    file_str = file.read()
+                os.remove('conf.txt')
+                with open('conf.txt', '+x') as file:
+                    file_list = file_str.split('\n')
+                    file_list[0] = 'DIRECTORY=' + newpath[:len(path) - 2:]
+                    file_str = '\n'.join(file_list)
+                    file.write(file_str)
+                return path
+            except:
+                ch = cw.alert(4, 43, winy // 2 - 3, winx // 2 - 21, 'the path is incorrect, press Enter to retry', True)
+                if ch:
+                    newpath = None
+                else:
+                    return cur_path 
 #readme
 with open('initmessage.txt') as file:
     file = file.read()
@@ -109,7 +124,7 @@ name = ''
 filename = 0
 longest  = 0
 def edit():
-    global winx, winy, name, redacted, DIRECTORY, filename, longest, TEXT_COLOR, HEADER_COLOR, BORDER_COLOR, SHADDOW_COLOR, NUM_COLOR, README, SHADDOW, settings 
+    global choosing, path,  winx, winy, name, redacted, DIRECTORY, filename, longest, TEXT_COLOR, HEADER_COLOR, BORDER_COLOR, SHADDOW_COLOR, NUM_COLOR, README, SHADDOW, settings 
     
     ##################################
     #    choosing/creating a file    #
@@ -120,7 +135,6 @@ def edit():
         if len(elem) > longest:
             longest = len(elem)
     ls_list.insert(0, 'NEW')
-    choosing = True
     while choosing:
         filename = cw.optionsscrl(winy // 2, winy // 4, winx // 2 - longest // 2 - 3, '~|choose a file:|~', ls_list, True) 
         name = filename
@@ -158,8 +172,10 @@ def edit():
         #################################
         #     editing the document      #
         #################################
-        
-        path = DIRECTORY + name
+        if path == None: 
+            path = DIRECTORY + name
+        else:
+            name = path.split('/')[-1]
         redacted, state, active, save = cw.editor(winy  - 6, winx - 12, 4, 5, path, True, name, True, SHADDOW, TEXT_COLOR, BORDER_COLOR, HEADER_COLOR, SHADDOW_COLOR, NUM_COLOR)
         
         ################################################################
@@ -190,6 +206,7 @@ def edit():
                                 newname = None
                     else:
                         name = filename
+                        path = DIRECTORY + name
                         break
             
             ########################

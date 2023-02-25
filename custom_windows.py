@@ -17,6 +17,7 @@ import curses
 import pyperclip
 import LinkedList as ll
 import sys
+import string
 
 #global variables
 llist = ll.LinkedList()
@@ -157,7 +158,7 @@ left = ord('h')
 tb = ord('\t')
 def tab():
     for _ in range(4):
-        insert(' ', winx, balance)
+        insert(' ', cursor.x, False)
 
 alt = 27
 def ALT():
@@ -208,9 +209,10 @@ def ALTp():
 
 v = ord('v')
 def ALTv():
+    global char
     clipboard_content = pyperclip.paste()
     for ch in clipboard_content:
-        insert((ch), winx, balance) 
+        insert((ch), cursor.x, False) 
     char = ''
 
 scl = ord('.')
@@ -225,7 +227,7 @@ def ALTscr():
 
 #global variables
 #all the functions are collected in fdict. The fdcit is assembled in prep_editor()
-action_ch = [curses.KEY_RIGHT, curses.KEY_LEFT, curses.KEY_UP, curses.KEY_DOWN, alt, curses.KEY_BACKSPACE]
+action_ch = [tb, alt, curses.KEY_BACKSPACE]
 fdict = {}
 char = None
 ch = None
