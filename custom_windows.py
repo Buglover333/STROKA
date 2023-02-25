@@ -16,6 +16,7 @@
 import curses
 import pyperclip
 import LinkedList as ll
+import sys
 
 #global variables
 llist = ll.LinkedList()
@@ -160,11 +161,14 @@ def tab():
 
 alt = 27
 def ALT():
+    global state
     ch = Win.win.getch()
     if ch == ord('s'):
+        state = 'save'
         return llist.get_str()
     elif ch == ord('m'):
-        return 'menu'
+        state = 'menu'
+        return llist.get_str()
     try:
         fdict[ch]()
     except:
@@ -272,7 +276,7 @@ def get_input(stdscr, winy, winx, ygap, xgap, file_name, balance, add_header,add
     #numbers
     if add_numbers: 
         num_list = llist.add_numbers(cursor.dispy, cursor.maxy)
-        num_pad = curses.newpad(winy + 9, llist.longest_num)
+        num_pad = curses.newpad(winy + 1, llist.longest_num)
         num_str = ''.join(num_list)
         num_pad.addstr(num_str, curses.color_pair(num_color))
         num_pad.refresh(0, 0, ygap, winx + xgap + 1, ygap + winy - 1, winx + xgap + llist.longest_num)
@@ -280,8 +284,8 @@ def get_input(stdscr, winy, winx, ygap, xgap, file_name, balance, add_header,add
 
 def prep_editor(stdscr, winy, winx, ygap, xgap, add_header, header_text, add_shaddow, text_color, border_color, shaddow_color,  balance):
     global pad, cursor, Win, bg, shaddow, header, header_wid, header_shad, filler, filler_h, llist, first_iter, fdict
-    stdscr.erase()
     curses.curs_set(1)
+    stdscr.erase()
     #bg fillers
     filler = ''
     filler_h = ''
@@ -346,7 +350,6 @@ def init_header(text, color):
 def prep_alert(stdscr, winy, winx, ygap, xgap, message,  add_shaddow, shaddow_color, text_color):
     global Win, shaddow, filler
     filler = ''
-    stdscr.erase()
     curses.start_color()
     colors(stdscr)
     curses.curs_set(0)
@@ -364,17 +367,15 @@ def prep_alert(stdscr, winy, winx, ygap, xgap, message,  add_shaddow, shaddow_co
         init_shaddow(False)
     Win.win.keypad(True)
     #input
-    while True:
-        ch = Win.win.getch()
-        if ch == ord('\n'):
-            break
+    ch = Win.win.getch()
+    if ch == ord('\n'):
+        return True
 
 option = 0
 def prep_option(stdscr, ygap, xgap, header_text, options, add_shaddow, shaddow_color, text_color1, text_color2, header_color):
     global Win, shaddow, filler, option, header, header_shad, header_wid, filler_h
     filler = ''
     filler_h = ''
-    stdscr.erase()
     curses.start_color()
     colors(stdscr)
     curses.curs_set(0)
@@ -470,7 +471,6 @@ def prep_optionsscrl(stdscr, winy, ygap, xgap, header_text, options, add_shaddow
     global Win, pad, header, filler, filler_h, shaddow, curs_pos, list_start,  header_shad, header_wid
     filler = ''
     filler_h = ''
-    stdscr.erase()
     curses.start_color()
     colors(stdscr)
     curses.curs_set(0)
@@ -509,7 +509,7 @@ def prep_optionsscrl(stdscr, winy, ygap, xgap, header_text, options, add_shaddow
     Win.win.bkgdset(' ', curses.color_pair(text_color1))
     Win.win.border()
     Win.win.noutrefresh()
-    pad.refresh(list_start, 0, ygap + 1, xgap + 1, ygap + winy - 1, xgap + longest - 1)
+    pad.refresh(list_start, 0, ygap + 1, xgap + 1, ygap + winy - 1, xgap + longest)
     pad.erase()
     Win.win.keypad(True)
     ch = Win.win.getch()
@@ -531,16 +531,28 @@ def prep_optionsscrl(stdscr, winy, ygap, xgap, header_text, options, add_shaddow
 ####################################
 #         main functions           #
 ####################################
+state = 'edit'
 
-def editor(winy, winx, ygap, xgap, file_name=None, add_header=False, header_text='', add_numbers=False, add_shaddow=False, text_color=0, border_color=0, header_color=0, shaddow_color=0, num_color=3, balance=False, buffersize=300, buffersize_y=5000):
+def editor(winy, winx, ygap, xgap, file_name=None, add_header=False, header_text='', add_numbers=False, add_shaddow=False, text_color=0, border_color=0, header_color=0, shaddow_color=0, num_color=3, balance=False, buffersize=300, buffersize_y=100):
+    global state, llist, first_iter, second_iter
+    del llist
+    llist = ll.LinkedList()
+    first_iter = True
+    second_iter = False
     curses.wrapper(prep_editor, winy, winx, ygap, xgap,  add_header, header_text, add_shaddow, text_color, border_color, shaddow_color, balance)
     e = None
     while e == None:
         e = curses.wrapper(get_input, winy, winx, ygap, xgap, file_name, balance, add_header, add_numbers, header_text, add_shaddow, text_color, border_color, header_color, num_color)
-    return e
+    if state == 'menu':
+        return e,'menu', True, False
+    elif state == 'save':
+        return e, 'save', True, True
+    else:
+        return e
 
 def alert(winy, winx, ygap, xgap, message,  add_shaddow=False, shaddow_color=0, text_color=0):
-    curses.wrapper(prep_alert, winy, winx, ygap, xgap, message,  add_shaddow, shaddow_color, text_color)
+    yn_result = curses.wrapper(prep_alert, winy, winx, ygap, xgap, message,  add_shaddow, shaddow_color, text_color)
+    return yn_result
 
 def options(ygap, xgap, header='poll', options=['1', '2', '3'], add_shaddow=False, shaddow_color=0, text_color1=0, text_color2=1, header_color=0):    
     e = None

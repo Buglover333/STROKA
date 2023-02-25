@@ -11,6 +11,7 @@
 #_|_|_|_|  _|  _|_|_|        _|_|  
 
 import string
+import gc
 
 class Node():
     def __init__(self, data=None, pos = 0):
@@ -26,6 +27,17 @@ class LinkedList:
         self.end = None
         self.longest = 0
         self.longest_num = 2
+    
+    def clear(self):
+        current_node = self.head
+        try:
+            while True:
+                current_node = current_node.next
+                del current_node.prev
+            gc.collect()
+        except:
+            gc.collect()
+            return
 
     def add_end(self, data):
         self.node = Node(data)
