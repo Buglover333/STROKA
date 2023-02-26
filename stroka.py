@@ -208,6 +208,7 @@ def edit():
                                 f = open(DIRECTORY + newname, 'x')
                                 f.close()
                                 filename = newname
+                                path = DIRECTORY + newname
                             except:
                                 cw.alert(4, 43, winy // 2 - 3, winx // 2 - 21, 'file already exists, press Enter to retry', True)
                                 newname = None
