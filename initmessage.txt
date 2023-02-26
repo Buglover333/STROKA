@@ -1,23 +1,24 @@
-                       ░█▀▀░▀█▀░█▀▄░█▀█░█░█░█▀█
-                       ░▀▀█░░█░░█▀▄░█░█░█▀▄░█▀█
-                       ░▀▀▀░░▀░░▀░▀░▀▀▀░▀░▀░▀░▀
+                 █▀▀░▀█▀░█▀▄░█▀█░█░█░█▀█
+                ░▀▀█░░█░░█▀▄░█░█░█▀▄░█▀█
+                ░▀▀▀░░▀░░▀░▀░▀▀▀░▀░▀░▀░▀
 
-              #########################################
-              #  press "Q" to exit the readme section #
-              #########################################
+        #########################################
+        #  press "Q" to exit the readme section #
+        #########################################
 
-This is a python curses text editor module. 
-Due to a fair amount of inefficiencies this module 
-handles large text documents rather badly (especially on older machines).
+This is a python curses text editor module. Due to a fair 
+amount of inefficiencies this module handles large text 
+documents rather badly (especially on older machines).
 If you have an idea on how to further improove my code,
 you can message me on social media. I will be 
 greatful for any feedback. I had very little
 experience coding prior to writing this project, 
 so forgive me my nooddle code (pretty please :(( )
 
-Inside of the editor you can press "ALT + m"  to open the menu.
-There you can change the color prefferences and choose a working 
-directory. You can also edit the config file (config.txt) manually.
+Inside of the editor you can press "ALT + m" 
+to open the menu, then choose settings, you can change 
+the color prefferences and choose a working directory. 
+You can also edit the config file (config.txt) manually. 
 It's pretty selfe-xplainatory.
 
 ///Key combinations are:///
@@ -29,8 +30,7 @@ ALT + o - clear the line left of the cursor
 ALT + p - clear the line right of the cursor
 ALT + V - paste from clipboard
     
-    Moving cursor via arrow keys causes bugs, so it is 
-    advisable to use ALT + h/j/k/l
+    To move the cursor use Alt + h/j/k/l
     
     More key combinations can be added. To do so, 
     simply add a new function to the 'get_input()'

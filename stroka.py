@@ -70,6 +70,9 @@ args: Namespace = parser.parse_args()
 
 if args.path != 'not specified':
     path = args.path
+    if os.path.exists(path) == False:
+        f = open(path, '+x')
+        f.close()
     choosing = False
 
 settings = []
@@ -103,7 +106,7 @@ def change_directory(newpath):
                 os.remove('conf.txt')
                 with open('conf.txt', '+x') as file:
                     file_list = file_str.split('\n')
-                    file_list[0] = 'DIRECTORY=' + newpath[:len(path) - 2:]
+                    file_list[0] = 'DIRECTORY=' + newpath[:len(newpath) - 2:]
                     file_str = '\n'.join(file_list)
                     file.write(file_str)
                 return path
@@ -118,7 +121,7 @@ with open('initmessage.txt') as file:
     file = file.read()
     y = winy - winy // 10
     if int(README) == 1:
-        cw.text(y, winx, 1, winx // 2 - 37, file, 0, True, 0)
+        cw.text(y, winx, 1, winx // 2 - 30, file, 0, True, 0)
 
 name = ''
 filename = 0
@@ -130,7 +133,11 @@ def edit():
     #    choosing/creating a file    #
     ##################################
     
-    ls_list = os.listdir(DIRECTORY)
+    try:
+        ls_list = os.listdir(DIRECTORY)
+    except:
+        DIRECTORY=change_directory('files/')
+        ls_list = os.listdir(DIRECTORY)
     for elem in ls_list:
         if len(elem) > longest:
             longest = len(elem)
@@ -161,7 +168,7 @@ def edit():
         for option in options:
             if len(option) > longest_option:
                 longest_option = len(option)
-        settings = ['BACK', '> show readme on start: ' + str(README), '> shadow: ' + str(SHADDOW), '> directory: ' + str(DIRECTORY), 
+        settings = ['> BACK', '> show readme on start: ' + str(README), '> shadow: ' + str(SHADDOW), '> directory: ' + str(DIRECTORY), 
                 '> text color: ' + str(TEXT_COLOR), '> header color: ' + str(HEADER_COLOR), '> border color: ' + str(BORDER_COLOR), 
                 '> shadow color: ' + str(SHADDOW_COLOR), '> numbers color: ' + str(NUM_COLOR)] 
         longest_setting = 0
@@ -223,7 +230,7 @@ def edit():
                 sett_state = True
                 while sett_state:
                     action = cw.optionsscrl(winy // 2, winy // 4, winx // 2 - longest_setting // 2 - 3, 'settings', settings, True)
-                    if action == 'BACK':
+                    if action == '> BACK':
                         action = ''
                         sett_state = False
                     elif action ==  '> show readme on start: ' + str(README):
@@ -254,7 +261,7 @@ def edit():
                 ch = True
             else:
                 ch = cw.alert(4, 43, winy // 2 - 3, winx // 2 - 21, 'do you want to save? (Enter/any key)', True)
-            with open(DIRECTORY + name, 'w') as doc:
+            with open(path, 'w') as doc:
                 if ch:
                     doc.truncate(0)
                     doc.write(redacted)
