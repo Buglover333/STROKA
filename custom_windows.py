@@ -146,7 +146,6 @@ def delete():
 
 #global for get_input
 first_iter = True
-second_iter = False
 moving = False
 
 #alt functions and more
@@ -227,26 +226,21 @@ def ALTscr():
 
 #global variables
 #all the functions are collected in fdict. The fdcit is assembled in prep_editor()
-action_ch = [tb, alt, curses.KEY_BACKSPACE]
+action_ch = [tb, alt, curses.KEY_BACKSPACE, curses.KEY_RIGHT, curses.KEY_LEFT, curses.KEY_UP, curses.KEY_DOWN]
 fdict = {}
 char = None
 ch = None
 def get_input(stdscr, winy, winx, ygap, xgap, file_name, balance, add_header,add_numbers,  header_text, add_shaddow, text_color, border_color, header_color, num_color):
-    global pad, cursor, bg, llist, shaddow, header, filler, first_iter, second_iter, numbers, num_pad, num_list, char, ch, fdict, action_ch
-    bg.win.border()
-    Win.win.keypad(True)
+    global pad, cursor, bg, llist, shaddow, header, filler, first_iter, numbers, num_pad, num_list, char, ch, fdict, action_ch
     if first_iter:
         char = ' '
-        first_iter = False
-        second_iter = True
-    elif second_iter:
         #read document
         if file_name != None:
             with open(file_name, 'r+') as file:
                 text = file.read()
                 llist.open_doc(text)
-        char = ' '
-        second_iter = False
+        first_iter = False
+        Win.win.refresh()
     else:    
         char = Win.win.getch()
     if char in action_ch:
@@ -257,23 +251,15 @@ def get_input(stdscr, winy, winx, ygap, xgap, file_name, balance, add_header,add
         insert(char, winx, balance)
     #buffer
     text = llist.make_buffer(cursor.y, cursor.dispy,cursor.maxy)
-    padlen = llist.longest + 2
+    padlen = llist.longest + winx
     buffersize = cursor.maxy + 2
     pad = curses.newpad(buffersize, padlen)
     longest = llist.longest
     pad.addstr(text, curses.color_pair(text_color))
-    #shaddow
-    if add_shaddow:
-        init_shaddow(add_header)
-    #header
-    if add_header:
-        init_header(header_text, header_color) 
+
     #refreshing everything
-    bg.win.refresh()
-    Win.win.refresh()
-    pad.refresh(0, cursor.dispx, ygap, xgap, winy + ygap - 1, winx + xgap - 1)
+    pad.noutrefresh(0, cursor.dispx, ygap, xgap, winy + ygap - 1, winx + xgap - 1)
     Win.win.move(cursor.y, cursor.x)
-    #stdscr.refresh()
     pad.erase()
     #numbers
     if add_numbers: 
@@ -281,10 +267,10 @@ def get_input(stdscr, winy, winx, ygap, xgap, file_name, balance, add_header,add
         num_pad = curses.newpad(winy + 1, llist.longest_num)
         num_str = ''.join(num_list)
         num_pad.addstr(num_str, curses.color_pair(num_color))
-        num_pad.refresh(0, 0, ygap, winx + xgap + 1, ygap + winy - 1, winx + xgap + llist.longest_num)
+        num_pad.noutrefresh(0, 0, ygap, winx + xgap + 1, ygap + winy - 1, winx + xgap + llist.longest_num)
         num_pad.erase()
 
-def prep_editor(stdscr, winy, winx, ygap, xgap, add_header, header_text, add_shaddow, text_color, border_color, shaddow_color,  balance):
+def prep_editor(stdscr, winy, winx, ygap, xgap, add_header, header_text, add_shaddow, text_color, border_color, shaddow_color, header_color,  balance):
     global pad, cursor, Win, bg, shaddow, header, header_wid, header_shad, filler, filler_h, llist, first_iter, fdict
     curses.curs_set(1)
     stdscr.erase()
@@ -295,31 +281,33 @@ def prep_editor(stdscr, winy, winx, ygap, xgap, add_header, header_text, add_sha
         filler += '█'
     for _ in range(3 * (winx + 2)):
         filler_h += '█'
-    #adding a shaddo
+    #adding a shadow
     if add_shaddow:
         shaddow = Window(winy + 2, winx + 2, ygap + 2, xgap - 4)
-        shaddow.win.bkgdset(' ', curses.color_pair(shaddow_color))
         header_shad = Window(4, winx + 2, ygap - 2, xgap - 4)
-        header_shad.win.bkgdset(' ', curses.color_pair(shaddow_color))
     #adding a header
     if add_header:
         header = Window(3, winx + 2, ygap - 4, xgap - 1)
         header_wid = (winx // 2) - (len(header_text) // 2)
-        header.win.bkgdset(' ', curses.color_pair(border_color))        
     #creating curses objects
     bg = Window(winy + 2, winx + 2, ygap - 1, xgap - 1)
-    bg.win.bkgdset(' ', curses.color_pair(border_color))
-    bg.win.idlok(False)
-    bg.win.idcok(False)
     Win = Window(winy, winx, ygap, xgap)
-    Win.win.bkgdset(' ', curses.color_pair(text_color))
-    Win.win.idlok(False)
-    bg.win.idcok(False)
+    Win.win.keypad(True)
     cursor = Cursor(Win, balance)
     colors(stdscr)
     fdict = {left: cursor.left, right: cursor.right, up: cursor.up, down: cursor.down, curses.KEY_RIGHT: cursor.right, curses.KEY_LEFT: cursor.left,
-            curses.KEY_DOWN: cursor.down, curses.KEY_UP: cursor.up, curses.KEY_BACKSPACE: delete, tb: tab, q: ALTq, o: ALTo, p: ALTp, w: ALTw, v: ALTv, a: ALTa, scl: ALTscl, scr: ALTscr, alt: ALT}
+            curses.KEY_DOWN: cursor.down, curses.KEY_UP: cursor.up, curses.KEY_BACKSPACE: delete, tb: tab, q: ALTq, o: ALTo, p: ALTp, w: ALTw, v: ALTv, a: ALTa, scl: ALTscl, scr: ALTscr, alt: ALT}        
+    stdscr.refresh()
+    #shaddow
+    if add_shaddow:
+        init_shaddow(add_header)
+    #header
+    if add_header:
+        init_header(header_text, header_color) 
+        bg.win.border()
+        bg.win.refresh()
 
+    
 ###########################################
 #       colors and customization          #
 ###########################################
@@ -334,10 +322,10 @@ def colors(scr):
 
 def init_shaddow(add_header):
     shaddow.win.addstr(0, 0, filler)
-    shaddow.win.noutrefresh()
+    shaddow.win.refresh()
     if add_header:
         header_shad.win.addstr(0, 0, filler_h)
-        header_shad.win.noutrefresh()
+        header_shad.win.refresh()
 
 def init_header(text, color):
     global header_wid, first_iter
@@ -356,7 +344,6 @@ def prep_alert(stdscr, winy, winx, ygap, xgap, message,  add_shaddow, shaddow_co
     colors(stdscr)
     curses.curs_set(0)
     Win = Window(winy, winx, ygap, xgap)
-    Win.win.bkgdset(' ', curses.color_pair(text_color))
     Win.win.border()
     msg_x = winx // 2 - len(message) // 2
     Win.win.addstr(winy//2, msg_x, message)
@@ -365,7 +352,6 @@ def prep_alert(stdscr, winy, winx, ygap, xgap, message,  add_shaddow, shaddow_co
         filler += '█'
     if add_shaddow:
         shaddow = Window(winy, winx, ygap + 2, xgap - 3)
-        shaddow.win.bkgdset(' ', curses.color_pair(shaddow_color))
         init_shaddow(False)
     Win.win.keypad(True)
     #input
@@ -391,7 +377,6 @@ def prep_option(stdscr, ygap, xgap, header_text, options, add_shaddow, shaddow_c
         winx = len(header_text)
     winx += 2
     Win = Window(winy, winx, ygap, xgap)
-    Win.win.bkgdset(' ', curses.color_pair(text_color1))
     Win.win.border()
     i = 0
     for elem in options:
@@ -408,14 +393,11 @@ def prep_option(stdscr, ygap, xgap, header_text, options, add_shaddow, shaddow_c
         filler_h += '█'
     if add_shaddow:
         shaddow = Window(winy - 1, winx + 2, ygap + 2, xgap - 2)
-        shaddow.win.bkgdset(' ', curses.color_pair(shaddow_color))
         header_shad = Window(3, winx + 1, ygap - 2, xgap - 2)
-        header_shad.win.bkgdset(' ', curses.color_pair(shaddow_color))
         init_shaddow(True)
     #header
     header = Window(3, winx, ygap - 3, xgap)
     header_wid = (winx // 2) - (len(header_text) // 2)
-    header.win.bkgdset(' ', curses.color_pair(header_color))
     init_header(header_text, header_color)
     #input
     curses.noecho()
@@ -446,10 +428,8 @@ def prep_text(stdscr, winy, winx, ygap, xgap, text, text_color, add_shaddow, sha
         filler += '█'
     if add_shaddow:
         shaddow = Window(winy, longest, ygap + 2, xgap - 3)
-        shaddow.win.bkgdset(' ', curses.color_pair(shaddow_color))
         init_shaddow(False)
     Win = Window(winy, longest, ygap, xgap)
-    Win.win.bkgdset(' ', curses.color_pair(text_color))
     Win.win.border()
     pad = curses.newpad(len(str_list), longest)
     pad.addstr(text)
@@ -498,19 +478,15 @@ def prep_optionsscrl(stdscr, winy, ygap, xgap, header_text, options, add_shaddow
                 pad.addstr('\n')
     if add_shaddow:
         shaddow = Window(winy, longest + 2, ygap + 3, xgap - 2)
-        shaddow.win.bkgdset(' ', curses.color_pair(shaddow_color))
         header_shad = Window(3, longest + 1, ygap - 2, xgap - 2)
-        header_shad.win.bkgdset(' ', curses.color_pair(shaddow_color))
         init_shaddow(True)
     #header
     header = Window(header_text.count('\n') + 3, longest + 2, ygap - header_text.count('\n') - 3, xgap)
     header_wid = (longest // 2) - (len(header_text.split('\n')[0]) //  2 + len(header_text.split('\n')[0]) % 2) + 1
-    header.win.bkgdset(' ', curses.color_pair(header_color))
     init_header(header_text, header_color)
     Win = Window(winy + 1, longest + 2, ygap, xgap)
-    Win.win.bkgdset(' ', curses.color_pair(text_color1))
     Win.win.border()
-    Win.win.noutrefresh()
+    Win.win.refresh()
     pad.refresh(list_start, 0, ygap + 1, xgap + 1, ygap + winy - 1, xgap + longest)
     pad.erase()
     Win.win.keypad(True)
@@ -541,7 +517,7 @@ def editor(winy, winx, ygap, xgap, file_name=None, add_header=False, header_text
     llist = ll.LinkedList()
     first_iter = True
     second_iter = False
-    curses.wrapper(prep_editor, winy, winx, ygap, xgap,  add_header, header_text, add_shaddow, text_color, border_color, shaddow_color, balance)
+    curses.wrapper(prep_editor, winy, winx, ygap, xgap,  add_header, header_text, add_shaddow, text_color, border_color, shaddow_color, header_color, balance)
     e = None
     while e == None:
         e = curses.wrapper(get_input, winy, winx, ygap, xgap, file_name, balance, add_header, add_numbers, header_text, add_shaddow, text_color, border_color, header_color, num_color)
@@ -567,7 +543,7 @@ def text(winy, winx, ygap, xgap, text='', text_color=0, add_shaddow=False, shadd
     while active:
         active = curses.wrapper(prep_text, winy, winx, ygap, xgap, text, text_color, add_shaddow, shaddow_color)
 
-def optionsscrl(winy, ygap, xgap, header_text='', options=['11111', '22222', '333333333'], add_shaddow=False, shaddow_color=0, text_color1=0, text_color2=1, header_color=0):
+def optionsscrl(winy, ygap, xgap, header_text='', options=['1', '2', '3'], add_shaddow=False, shaddow_color=0, text_color1=0, text_color2=1, header_color=0):
     e = None
     while e == None:
         e = curses.wrapper(prep_optionsscrl, winy, ygap, xgap, header_text, options, add_shaddow, shaddow_color, text_color1, text_color2, header_color)
