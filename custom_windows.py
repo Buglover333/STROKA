@@ -146,6 +146,7 @@ def delete():
 
 #global for get_input
 first_iter = True
+second_iter = False
 moving = False
 
 #alt functions and more
@@ -231,7 +232,7 @@ fdict = {}
 char = None
 ch = None
 def get_input(stdscr, winy, winx, ygap, xgap, file_name, balance, add_header,add_numbers,  header_text, add_shaddow, text_color, border_color, header_color, num_color):
-    global pad, cursor, bg, llist, shaddow, header, filler, first_iter, numbers, num_pad, num_list, char, ch, fdict, action_ch
+    global pad, cursor, bg, llist, shaddow, header, filler, first_iter, second_iter, numbers, num_pad, num_list, char, ch, fdict, action_ch
     if first_iter:
         char = ' '
         #read document
@@ -241,6 +242,11 @@ def get_input(stdscr, winy, winx, ygap, xgap, file_name, balance, add_header,add
                 llist.open_doc(text)
         first_iter = False
         Win.win.refresh()
+        first_iter = False
+        second_iter = True
+    elif second_iter:
+        char = curses.KEY_BACKSPACE
+        second_iter = False
     else:    
         char = Win.win.getch()
     if char in action_ch:
